@@ -1,0 +1,107 @@
+---
+title: "example1-blackjack"
+author: "Kendrick Lam"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r}
+
+# Generate the full deck (shoe)
+generate_shoe <- function(decks){
+  one_deck <- c(rep(c("A", 2:9), 4), rep(10, 16))
+  return(rep(one_deck, decks))
+}
+
+# Generate value of a single card
+card_value <- function(card){
+  values = c("2" = 2, "3" = 3, "4" = 4, "5" = 5, "6" = 6, "7" = 7, "8" = 8, "9" = 9, "10" = 10, "A" = 11)
+  return(values[card])
+}
+
+# Calculate hand value
+# Input: current hand (all drawn cards)
+# Output: List with total hand value, and whether the hand is soft or not
+hand_value <- function(hand){
+  total = sum(sapply(hand, card_value))
+  num_aces = length(which(hand == "A"))
+  while(total > 21 && num_aces > 0){ # Treat aces as 11 unless absolutely needed to
+    total = total - 10
+    num_aces = num_aces - 1
+  }
+  soft = num_aces > 0 # There is at least 1 ace that is worth 11
+  return(list(total = total, soft = soft))
+}
+
+# Return 1 card from deck, remove it from the deck
+draw_card <- function(shoe){
+  index <- sample(length(shoe), 1)
+  card <- shoe[index]
+  deck <<- deck[-index] # remove drawn card from deck
+  return(card)
+}
+
+# Simulate 1 round of blackjack
+blackjack_round <- function(shoe){
+  # Create hands
+  player_hand = c()
+  dealer_hand = c()
+  
+  # Deal initial hand
+  for(i in 1:2){
+    player_hand <- c(player_hand, draw_card(shoe))
+    dealer_hand <- c(dealer_hand, draw_card(shoe))
+  }
+  dealer_upcard <- card_value(dealer_hand[1])
+  
+  # Check if either player has blackjack
+  if(hand_value(dealer_hand)$total == 21){
+    if(hand_value(player_hand)$total == 21){
+      return(0) # both players have blackjack
+    }
+    else{
+      return(-1) # only dealer has blackjack
+    }
+  }
+  if(hand_value(player_hand == 21)$total){
+    return(1.5) # only player has blackjack
+  }
+  
+  # Player's Turn (implement basic strategy)
+  action = T # player is still playing
+  while(action = T){
+    if(hand_value(player_hand)$soft){ # soft hand
+      if(hand_value(player_hand)$total <= 17){ # hit on soft 17 or lower
+        player_hand <- c(player_hand, draw_card(shoe))
+      }
+      else if(hand_value(player_hand)$total >= 19){ # stand on soft 19 or higher
+        break
+      }
+      else if(dealer_upcard >= 9){ # hit on soft 18 with dealer upcard 9, 10, A
+        player_hand <- c(player_hand, draw_card(shoe))
+      }
+      else{ # stand on soft 18 with dealer upcard below 9
+        break
+      }
+    }
+    
+    else{
+      
+    }
+    
+  }
+
+  
+  # Dealer's Turn # stand on soft 17
+}
+
+shoe <- generate_shoe(8)
+sample(shoe, 3)
+length(shoe)
+```
+
