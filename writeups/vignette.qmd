@@ -13,9 +13,59 @@ The “Monte Carlo method”, originally developed by Stanisław Ulam and John v
 
 Monte Carlo simulation estimates an unknown quantity by randomly sampling and simulating a process many times and averaging what happens. Formally, it is a multiple probability simulation technique that estimates a range of possible outcomes or results for a system or process by having it be run many times, with randomly sampled inputs drawn from defined probability distributions. Instead of a singular fixed value for unknown variables, it runs thousands or even millions of scenarios, each with different input values, aggregating results into a distribution of possible outcomes.
 
+If the quantity we want is an expectation $\theta = E[h(X)]$, we draw $X_1, \dots, X_n$ independently and compute
+
+$$
+\hat{\theta}_n = \frac{1}{n}\sum_{i=1}^{n} h(X_i).
+$$
+
+Probabilities are a special case. Since $P(A) = E[\mathbf{1}\{X \in A\}]$, the Monte
+Carlo estimate of a probability is just the fraction of simulations where $A$ happened,
+e.g. the fraction of simulated hands the player wins.
+
 
 ## Motivation
 
 Monte Carlo methods started with a card game. In 1946, Stanislaw Ulam was recovering from an illness and playing solitaire. He wondered how likely a random deal was to come out. After trying to work it out combinatorially, he realized it was easier to just play many games and count the wins. He and John von Neumann developed the idea at Los Alamos, and Nicholas Metropolis named it after the Monte Carlo casino, located in Monaco. 
 
 Blackjack has the same problem. One hand is easy to simulate: deal cards, follow rules, see who wins. But the exact probability is tedious to derive. The dealer’s draws depend on which cards have already appeared, a finite shoe makes successive draws independent, and every hit-or-stand decision branches the game tree. Simulation sidesteps all of this. And if we want to change a rule (dealer hits soft 17, six decks instead of one), we edit a line of code instead of redoing the math.
+
+## Methodology
+
+Every Monte Carlo study in this vignette follows the same steps:
+
+| Step | General | In blackjack |
+|---|---|---|
+| 1. Define the target | the quantity $\theta$ to estimate | $P(\text{win})$, expected payoff, or $P(\text{win} \mid \text{hand}, \text{upcard}, \text{action})$ |
+| 2. Specify the random model | the distribution of the inputs | infinite deck (draws with replacement) vs. finite shoe; dealer stands on soft 17 |
+| 3. Simulate one trial | generate inputs, apply the rule $h$ | deal, play the hand under fixed rules, record the outcome |
+| 4. Repeat and average | compute $\hat{\theta}_n$ | win rate over $n$ hands |
+| 5. Quantify uncertainty | standard error, CI, convergence | is $n$ large enough to trust the estimate? |
+
+What's the probability of being dealt a natural blackjack (an ace plus a 10-value card) from a single 52-card deck? The exact answer is
+$\frac{4 \cdot 16}{\binom{52}{2}} \approx 0.0483$, so we can see whether simulation recovers it.
+
+```{r}
+set.seed(123)
+deck <- rep(c(2:9, 10, 10, 10, 10, 11), times = 4)   
+# 52 cards, aces counted as 11
+
+is_natural <- function() sum(sample(deck, 2)) == 21  
+# two aces = 22, so not counted
+
+n <- 100000
+p_hat <- mean(replicate(n, is_natural()))
+se <- sqrt(p_hat * (1 - p_hat) / n)
+
+c(estimate = p_hat, lower = p_hat - 1.96 * se, upper = p_hat + 1.96 * se,
+  exact = 4 * 16 / choose(52, 2))
+```
+
+## Application
+
+Monte Carlo methods appear wherever a system is easy to simulate but hard to solve: neutron transport at Los Alamos (where the method was born), option pricing in finance,
+landing-site dispersion analysis for NASA's Mars missions, Bayesian computation through MCMC, and reinforcement learning, where agents estimate the value of a strategy by
+averaging returns over simulated episodes (Sutton & Barto use blackjack as their running example).
+
+In the rest of this vignette we apply these steps twice. **Example 1** estimates the player's overall win probability under a fixed strategy. 
+**Example 2** estimates conditional win probabilities for each (hand, upcard, action) combination to rebuild a hit/stand strategy chart.
