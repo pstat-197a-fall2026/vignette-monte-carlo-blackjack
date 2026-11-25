@@ -1,5 +1,21 @@
 ---
 title: "vignette"
-format: html
+authors: "Anika Achary, Elijah Gabriel Ret, Kendrick Lam, Ryan Au, Sophia Leng"
+format: pdf
 ---
 
+# Introduction
+
+The “Monte Carlo method”, originally developed by Stanisław Ulam and John von Neumann in 1946, is a statistical method that relies on repeated random sampling to obtain some sort of a numerical result. Conceptually, it uses randomness to solve complex problems regarding uncertainty. By using random sampling, these methods allow researchers and professionals to approximate solutions for problems in areas such as finance, engineering, physics, statistics, and artificial intelligence. They are particularly useful for risk assessment, optimization, numerical integration, and modeling systems with uncertain inputs. For our vignette, we will base our examples on a popular casino game, Blackjack.
+
+
+## Definition
+
+Monte Carlo simulation estimates an unknown quantity by randomly sampling and simulating a process many times and averaging what happens. Formally, it is a multiple probability simulation technique that estimates a range of possible outcomes or results for a system or process by having it be run many times, with randomly sampled inputs drawn from defined probability distributions. Instead of a singular fixed value for unknown variables, it runs thousands or even millions of scenarios, each with different input values, aggregating results into a distribution of possible outcomes.
+
+
+## Motivation
+
+Monte Carlo methods started with a card game. In 1946, Stanislaw Ulam was recovering from an illness and playing solitaire. He wondered how likely a random deal was to come out. After trying to work it out combinatorially, he realized it was easier to just play many games and count the wins. He and John von Neumann developed the idea at Los Alamos, and Nicholas Metropolis named it after the Monte Carlo casino, located in Monaco. 
+
+Blackjack has the same problem. One hand is easy to simulate: deal cards, follow rules, see who wins. But the exact probability is tedious to derive. The dealer’s draws depend on which cards have already appeared, a finite shoe makes successive draws independent, and every hit-or-stand decision branches the game tree. Simulation sidesteps all of this. And if we want to change a rule (dealer hits soft 17, six decks instead of one), we edit a line of code instead of redoing the math.
